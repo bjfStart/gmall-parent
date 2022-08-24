@@ -1,9 +1,11 @@
 package com.atguigu.gmall.product.controller;
 
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.model.product.BaseAttrInfo;
 import com.atguigu.gmall.model.product.BaseCategory1;
 import com.atguigu.gmall.model.product.BaseCategory2;
 import com.atguigu.gmall.model.product.BaseCategory3;
+import com.atguigu.gmall.product.service.BaseAttrInfoService;
 import com.atguigu.gmall.product.service.BaseCategory1Service;
 import com.atguigu.gmall.product.service.BaseCategory2Service;
 import com.atguigu.gmall.product.service.BaseCategory3Service;
@@ -31,14 +33,13 @@ public class CategoryController {
     @Autowired
     BaseCategory3Service baseCategory3Service;
 
+
 //    http://192.168.2.1/admin/product/getCategory1
     @GetMapping("getCategory1")
     public Result getCategory1(){
         List<BaseCategory1> list = baseCategory1Service.list();
         return Result.ok(list);
     }
-
-
 
     // /admin/product/getCategory2/1
     @GetMapping("getCategory2/{category1Id}")
@@ -53,6 +54,8 @@ public class CategoryController {
         List<BaseCategory3> list = baseCategory3Service.getCategory2Child(category2Id);
         return Result.ok(list);
     }
+
+
 
 
 }

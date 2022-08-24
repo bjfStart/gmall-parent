@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.gmall.product.mapper.BaseAttrInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.atguigu.gmall.model.product.BaseAttrInfo">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="attrName" column="attr_name" jdbcType="VARCHAR"/>
+            <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
+            <result property="categoryLevel" column="category_level" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,attr_name,category_id,
+        category_level
+    </sql>
+
+    <resultMap id="BaseAttrInfoMap" type="com.atguigu.gmall.model.product.BaseAttrInfo" autoMapping="true">
+        <id column="id" property="id"></id>
+        <collection property="attrValueList" ofType="com.atguigu.gmall.model.product.BaseAttrValue" autoMapping="true">
+            <id column="attr_value_id" property="id"></id>
+        </collection>
+    </resultMap>
+
+    <select id="getAttrInfoList" resultMap="BaseAttrInfoMap">
+        select a.id,a.attr_name,a.category_id,a.category_level,
+                b.id attr_value_id,b.attr_id,b.value_name
+        from base_attr_info a
+        left join base_attr_value b
+        on a.id = b.attr_id
+        <where>
+            <if test="category1Id != null and category1Id!=0">
+               or   (a.category_id = #{category1Id} and a.category_level=1)
+            </if>
+            <if test="category2Id != null and category2Id!=0">
+               or   (a.category_id = #{category2Id} and a.category_level=2)
+            </if>
+            <if test="category3Id != null and category3Id!=0">
+               or   (a.category_id = #{category3Id} and a.category_level=3)
+            </if>
+        </where>
+        order by a.category_level,a.id
+    </select>
+</mapper>
