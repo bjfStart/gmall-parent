@@ -14,3 +14,10 @@ spring:
     password: 123456
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
+
+app:
+  minio:
+    endpoint: http://192.168.2.108:9000  # 访问minio的地址
+    ak: admin   # 用户名
+    sk: admin123456 # 密码
+    bucketName: gmall # 桶名

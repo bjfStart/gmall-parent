@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.util.List;
+
 /**
  * @author feng
  * @create 2022-08-25 0:29
@@ -18,9 +20,9 @@ public class BaseTradeMarkController {
     @Autowired
     BaseTrademarkService baseTrademarkService;
 
-    //    /admin/product/baseTrademark/1/10
 
     /**
+     * /admin/product/baseTrademark/1/10
      * 分页查询所有的品牌
      *
      * @param pn   当前页
@@ -35,11 +37,10 @@ public class BaseTradeMarkController {
         Page<BaseTrademark> pageResult = baseTrademarkService.page(page);
         return Result.ok(pageResult);
     }
-    // /admin/product/baseTrademark/save
 
     /**
+     * /admin/product/baseTrademark/save
      * 新增品牌 或 修改属性
-     *
      * @param baseTrademark
      * @return
      */
@@ -52,14 +53,12 @@ public class BaseTradeMarkController {
     @PutMapping("baseTrademark/update")
     public Result update(@RequestBody BaseTrademark baseTrademark) {
         baseTrademarkService.updateById(baseTrademark);
-
         return Result.ok();
     }
 
     /**
      * /admin/product/baseTrademark/get/2
      * 根据id查询品牌信息，并回显
-     *
      * @param id
      * @return
      */
@@ -72,7 +71,6 @@ public class BaseTradeMarkController {
     /**
      * /admin/product/baseTrademark/remove/2
      * 根据id删除品牌信息
-     *
      * @param id
      * @return
      */
@@ -82,5 +80,15 @@ public class BaseTradeMarkController {
         return Result.ok();
     }
 
+
+    /**
+     * 获取所有的品牌
+     * /admin/product/baseTrademark/getTrademarkList
+     */
+    @GetMapping("baseTrademark/getTrademarkList")
+    public Result getTrademarkList(){
+        List<BaseTrademark> list = baseTrademarkService.list();
+        return  Result.ok(list);
+    }
 
 }
