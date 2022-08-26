@@ -24,6 +24,17 @@ public class SpuSaleAttrServiceImpl extends ServiceImpl<SpuSaleAttrMapper, SpuSa
     public List<SpuSaleAttr> getSaleAttrAndValueBySupId(long spuId) {
         return spuSaleAttrMapper.getSaleAttrAndValueBySupId(spuId);
     }
+
+    /**
+     * 获取销售属性和销售属性的值，以及选中的属性
+     * @param spuId
+     * @param skuId
+     * @return
+     */
+    @Override
+    public List<SpuSaleAttr> getSaleAttrAndValueMarkSku(Long spuId, Long skuId) {
+        return spuSaleAttrMapper.getSaleAttrAndValueMarkSku(spuId,skuId);
+    }
 }
 
 
