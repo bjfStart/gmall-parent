@@ -35,7 +35,9 @@ public class SpuController {
                              @PathVariable long size,
                              @RequestParam long category3Id){
         Page<SpuInfo> page = new Page<>(pn, size);
-        Page<SpuInfo> result = spuInfoService.page(page);
+        QueryWrapper<SpuInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("category3_id",category3Id);
+        Page<SpuInfo> result = spuInfoService.page(page,queryWrapper);
         return Result.ok(result);
     }
 

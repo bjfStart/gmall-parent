@@ -35,7 +35,7 @@
 
     <select id="getSaleAttrAndValueMarkSku" resultMap="saleAttrAndValueMap">
         select ssa.*,
-               ssav.id vid,
+               ssav.id                                          vid,
                ssav.sale_attr_value_name,
                if(skuv.sale_attr_value_id is null, '0', '1') as is_checked
         from spu_sale_attr ssa
@@ -45,5 +45,24 @@
                 on ssav.id = skuv.sale_attr_value_id and skuv.sku_id = #{skuId}
         where ssa.spu_id = #{spuId}
         order by ssa.id, ssav.id
+    </select>
+
+    <select id="getAllSkuValueJson" resultType="com.atguigu.gmall.model.to.ValueSkuJsonTo">
+        select a.sku_id, GROUP_CONCAT(DISTINCT sale_attr_value_id order by sale_attr_value_id asc separator '|') as value_json
+        from (
+                     select si.id    sku_id,
+                            skuav.id vid,
+                            skuav.spu_id,
+                            skuav.sale_attr_value_id,
+                            ssav.base_sale_attr_id
+                     from sku_info si
+                                  left join sku_sale_attr_value skuav
+                             on si.id = skuav.sku_id
+                                  left join spu_sale_attr_value ssav
+                             on skuav.spu_id = ssav.spu_id
+                     where si.spu_id = #{spuId}
+                     order by si.id, ssav.base_sale_attr_id, skuav.sale_attr_value_id
+                     ) a
+        group by a.sku_id
     </select>
 </mapper>

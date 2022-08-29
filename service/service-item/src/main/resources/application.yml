@@ -9,3 +9,20 @@ spring:
       type: web
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+  redis:
+    host: 192.168.2.108
+    password: Lfy123456
+
+  app:
+    thread-pool:
+      core: 4
+      max: 8
+      queue-size: 2000
+      keep-alive-time: 300
+#暴漏所有的监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

@@ -1,5 +1,6 @@
 package com.atguigu.gmall.item;
 
+import com.atguigu.gmall.common.annotation.EnableThreadPool;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -8,6 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @author feng
  * @create 2022-08-26 19:46
  */
+@EnableThreadPool
 @EnableFeignClients
 @SpringCloudApplication
 public class ItemMainApplication {

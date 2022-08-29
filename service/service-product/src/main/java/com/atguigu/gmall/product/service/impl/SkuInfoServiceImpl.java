@@ -123,7 +123,12 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         return skuDetailTo;
     }
 
-    private BigDecimal get1010Price(Long skuId) {
+    @Override
+    public SkuInfo getDetailSkuInfo(Long skuId) {
+        return skuInfoMapper.selectById(skuId);
+    }
+
+    public  BigDecimal get1010Price(Long skuId) {
         BigDecimal price = skuInfoMapper.getRealPrice(skuId);
         return price;
     }
