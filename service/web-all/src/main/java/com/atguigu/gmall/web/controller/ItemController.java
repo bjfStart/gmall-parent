@@ -27,6 +27,12 @@ public class ItemController {
         Result<SkuDetailTo> result = skuDetailFeginClient.getSkuDetail(skuId);
         if(result.isOk()){
             SkuDetailTo skuDetailTo = result.getData();
+
+            if(skuDetailTo == null || skuDetailTo.getSkuInfo() == null){
+                //说明没有查到商品
+                return "item/404";
+            }
+
             //成功
             model.addAttribute("categoryView",skuDetailTo.getCategoryViewTo());
             model.addAttribute("skuInfo",skuDetailTo.getSkuInfo());

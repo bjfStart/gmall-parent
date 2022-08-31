@@ -316,11 +316,11 @@
         },
 
         created() {
-            this.init()
+            this.com.atguigu.gmall.product.init()
         },
 
         methods: {
-            init() {
+            com.atguigu.gmall.product.init() {
                 cart.cartList().then(response => {
                     // debugger
                     this.data = response.data.data
@@ -345,7 +345,7 @@
 
             addToCart(skuId, skuNum=1) {
                 cart.addToCart(skuId, skuNum).then(response => {
-                    this.init()
+                    this.com.atguigu.gmall.product.init()
                 })
             },
 
@@ -375,7 +375,7 @@
                 // debugger
                 cart.deleteCart(skuId).then(response => {
                     console.log('刪除成功')
-                    this.init()
+                    this.com.atguigu.gmall.product.init()
                 })
             },
 

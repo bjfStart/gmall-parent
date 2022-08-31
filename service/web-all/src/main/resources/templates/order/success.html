@@ -201,11 +201,11 @@
 		},
 
         created() {
-            this.init()
+            this.com.atguigu.gmall.product.init()
         },
 
         methods: {
-            init() {
+            com.atguigu.gmall.product.init() {
                 trade.getPayOrderInfo(this.orderId).then(response => {
                     this.data = response.data.data
                     console.log('成功')

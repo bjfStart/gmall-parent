@@ -12,6 +12,9 @@ spring:
     url: jdbc:mysql://192.168.2.108:3306/gmall_product?useSSL=false&characterEncoding=utf-8
     username: root
     password: 123456
+  redis:
+    host: 192.168.2.108
+    password: Lfy123456
 
 
 app:
@@ -20,3 +23,6 @@ app:
     ak: admin   # 用户名
     sk: admin123456 # 密码
     bucketName: gmall # 桶名
+  thread-pool:
+    core: 4
+    max: 8

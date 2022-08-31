@@ -2412,7 +2412,7 @@ function getFirstComponentChild (children) {
 function initEvents (vm) {
   vm._events = Object.create(null);
   vm._hasHookEvent = false;
-  // init parent attached events
+  // com.atguigu.gmall.product.init parent attached events
   var listeners = vm.$options._parentListeners;
   if (listeners) {
     updateComponentListeners(vm, listeners);
@@ -4620,7 +4620,7 @@ function initMixin (Vue) {
     if ("development" !== 'production' && config.performance && mark) {
       vm._name = formatComponentName(vm, false);
       mark(endTag);
-      measure(("vue " + (vm._name) + " init"), startTag, endTag);
+      measure(("vue " + (vm._name) + " com.atguigu.gmall.product.init"), startTag, endTag);
     }
 
     if (vm.$options.el) {
@@ -5594,7 +5594,7 @@ function createPatchFunction (backend) {
       if (isDef(i = i.hook) && isDef(i = i.init)) {
         i(vnode, false /* hydrating */, parentElm, refElm);
       }
-      // after calling the init hook, if the vnode is a child component
+      // after calling the com.atguigu.gmall.product.init hook, if the vnode is a child component
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
