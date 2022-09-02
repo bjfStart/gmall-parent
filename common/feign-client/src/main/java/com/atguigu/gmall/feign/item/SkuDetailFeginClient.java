@@ -1,4 +1,4 @@
-package com.atguigu.gmall.web.fegin;
+package com.atguigu.gmall.feign.item;
 
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.to.SkuDetailTo;

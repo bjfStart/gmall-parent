@@ -16,10 +16,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableThreadPool
 @Import({Swagger2Config.class})
+@MapperScan("com.atguigu.gmall.product.mapper") //自动扫描这个包下的所有Mapper接口
 @SpringCloudApplication
-@MapperScan(basePackages = "com.atguigu.gmall.product.mapper")
 public class ProductMainApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ProductMainApplication.class,args);
+        SpringApplication.run(ProductMainApplication.class, args);
     }
 }

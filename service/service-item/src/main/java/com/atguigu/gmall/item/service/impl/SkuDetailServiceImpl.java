@@ -3,9 +3,9 @@ package com.atguigu.gmall.item.service.impl;
 import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.util.Jsons;
+import com.atguigu.gmall.feign.product.SkuProductFeginClient;
 import com.atguigu.starter.cache.service.CacheOpsService;
 import com.atguigu.starter.cache.annotation.GmallCache;
-import com.atguigu.gmall.item.fegin.SkuDetailFeginClient;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
 import com.atguigu.gmall.model.product.SkuInfo;
@@ -42,7 +42,7 @@ public class SkuDetailServiceImpl implements SkuDetailService {
      * private Map<Long,SkuDetailTo> skuCache = new ConcurrentHashmap<>();
      */
     @Autowired
-    SkuDetailFeginClient skuDetailFeginClient;
+    SkuProductFeginClient skuDetailFeginClient;
 
     @Autowired
     ThreadPoolExecutor executor;

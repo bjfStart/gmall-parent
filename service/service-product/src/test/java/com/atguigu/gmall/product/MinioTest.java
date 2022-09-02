@@ -1,4 +1,4 @@
-package com.atguigu.product;
+package com.atguigu.gmall.product;
 
 import io.minio.MinioClient;
 import io.minio.PutObjectOptions;
