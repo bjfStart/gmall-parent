@@ -3,6 +3,8 @@ package com.atguigu.gmall.product.api;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.to.CategoryTreeTo;
 import com.atguigu.gmall.product.service.BaseCategory2Service;
+import com.atguigu.starter.cache.annotation.GmallCache;
+import com.atguigu.starter.cache.constant.SysRedisConst;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

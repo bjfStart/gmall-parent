@@ -3,7 +3,8 @@ package com.atguigu.gmall.item.service.impl;
 import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.util.Jsons;
-import com.atguigu.gmall.item.cache.CacheOpsService;
+import com.atguigu.starter.cache.service.CacheOpsService;
+import com.atguigu.starter.cache.annotation.GmallCache;
 import com.atguigu.gmall.item.fegin.SkuDetailFeginClient;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
@@ -20,7 +21,6 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -50,6 +50,19 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     @Autowired
     StringRedisTemplate redisTemplate;
 
+    //    @Transactional
+    @GmallCache(
+            cacheKey = SysRedisConst.SKU_INFO_PREFIX + "#{#params[0]}",
+            bloomName = SysRedisConst.BLOOM_SKUID,
+            bloomValue = "#{#params[0]}",
+            lockName = SysRedisConst.LOCK_SKU_DETAIL +  "#{#params[0]}"
+    )
+    @Override
+    public SkuDetailTo getSkuDetail(long skuId) {
+        SkuDetailTo skuDetailFromRpc = getSkuDetailFromRpc(skuId);
+        return skuDetailFromRpc;
+    }
+
     /**
      * 未缓存优化前
      *
@@ -78,8 +91,10 @@ public class SkuDetailServiceImpl implements SkuDetailService {
 
         //2.查询商品图片信息 skuImage
         CompletableFuture<Void> imageFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Result<List<SkuImage>> skuImage = skuDetailFeginClient.getSkuImage(skuId);
-            skuInfo.setSkuImageList(skuImage.getData());
+            if(skuInfo != null){
+                Result<List<SkuImage>> skuImage = skuDetailFeginClient.getSkuImage(skuId);
+                skuInfo.setSkuImageList(skuImage.getData());
+            }
         }, executor);
 
         //3.查询商品实时价格
@@ -89,20 +104,26 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         }, executor);
         //4.查询销售属性名值
         CompletableFuture<Void> saleAttrFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Result<List<SpuSaleAttr>> skuSaleAttrValues = skuDetailFeginClient.getSkuSaleAttr(skuId, skuInfo.getSpuId());
-            skuDetailTo.setSpuSaleAttrList(skuSaleAttrValues.getData());
+            if(skuInfo != null){
+                Result<List<SpuSaleAttr>> skuSaleAttrValues = skuDetailFeginClient.getSkuSaleAttr(skuId, skuInfo.getSpuId());
+                skuDetailTo.setSpuSaleAttrList(skuSaleAttrValues.getData());
+            }
         }, executor);
 
         //5.查询sku组合
         CompletableFuture<Void> valueJsonFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Result<String> skuValueJson = skuDetailFeginClient.getSkuValueJson(skuInfo.getSpuId());
-            skuDetailTo.setValuesSkuJson(skuValueJson.getData());
+            if(skuInfo != null) {
+                Result<String> skuValueJson = skuDetailFeginClient.getSkuValueJson(skuInfo.getSpuId());
+                skuDetailTo.setValuesSkuJson(skuValueJson.getData());
+            }
         }, executor);
 
         //6.查询分类
         CompletableFuture<Void> categoryViewFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Result<CategoryViewTo> categoryView = skuDetailFeginClient.getCategoryView(skuInfo.getCategory3Id());
-            skuDetailTo.setCategoryViewTo(categoryView.getData());
+            if(skuInfo != null) {
+                Result<CategoryViewTo> categoryView = skuDetailFeginClient.getCategoryView(skuInfo.getCategory3Id());
+                skuDetailTo.setCategoryViewTo(categoryView.getData());
+            }
         }, executor);
 
         /**
@@ -135,11 +156,11 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         return skuDetailTo;
 
     }
+
     @Autowired
     CacheOpsService cacheOpsService;
 
-    @Override
-    public SkuDetailTo getSkuDetail(long skuId) {
+    public SkuDetailTo getSkuDetailWithCache(long skuId) {
         String cacheKey = SysRedisConst.SKU_INFO_PREFIX + skuId;
         //1.先查缓存
         SkuDetailTo cacheData = cacheOpsService.getCacheData(cacheKey, SkuDetailTo.class);
@@ -185,8 +206,6 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     ReentrantLock lock = new ReentrantLock(); //锁的住
 
 
-
-
 //    void redisLock(){
 //        //每个请求都会生成一个唯一令牌
 //        String token = UUID.randomUUID().toString();
@@ -212,7 +231,7 @@ public class SkuDetailServiceImpl implements SkuDetailService {
 
 
     public SkuDetailTo getSkuDetailXxxxFeature(long skuId) {
-        lockPool.put(skuId,new ReentrantLock());
+        lockPool.put(skuId, new ReentrantLock());
         //每个不同的sku，用自己专用的锁
         //1.看缓存中有没有 sku:info:50
         String jsonStr = redisTemplate.opsForValue().get("sku:info:" + skuId);
@@ -226,7 +245,7 @@ public class SkuDetailServiceImpl implements SkuDetailService {
             // 防止随机值穿透攻击？回源之前，先用布隆/bitmap判断有没有
 //            int result = getbit(49);
             //TODO 加锁解决击穿
-            SkuDetailTo fromRpc  = null;
+            SkuDetailTo fromRpc = null;
             //JVM 抢不到锁的等1s，怎么判断 synchronized 抢到还是没抢到
 
 //            ReentrantLock lock = new ReentrantLock(); //锁不住
@@ -234,7 +253,7 @@ public class SkuDetailServiceImpl implements SkuDetailService {
 
             //判断锁池中是否有自己的锁
             //锁池中不存在就放一把新的锁，作为自己的锁，存在就用之前锁
-            ReentrantLock lock = lockPool.putIfAbsent(skuId,new ReentrantLock());
+            ReentrantLock lock = lockPool.putIfAbsent(skuId, new ReentrantLock());
 
             boolean b = this.lock.tryLock(); //立即尝试加锁，不用等，瞬发，等待逻辑在业务上，抢一下，不成就不用再抢了
 //            boolean b = lock.tryLock(1,TimeUnit.SECONDS);

@@ -7,15 +7,17 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author feng
  * @create 2022-08-22 16:58
  */
+@EnableScheduling
 @EnableThreadPool
-@Import({Swagger2Config.class, RedissonAutoConfiguration.class})
+@Import({Swagger2Config.class})
 @SpringCloudApplication
-@MapperScan(basePackages = "com.atguigu.gmall.*.mapper")
+@MapperScan(basePackages = "com.atguigu.gmall.product.mapper")
 public class ProductMainApplication {
     public static void main(String[] args) {
         SpringApplication.run(ProductMainApplication.class,args);
