@@ -1,5 +1,6 @@
 package com.atguigu.gmall.product.service;
 
+import com.atguigu.gmall.model.list.Goods;
 import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -16,7 +17,7 @@ public interface SkuInfoService extends IService<SkuInfo> {
 
     void saveSkuInfo(SkuInfo skuInfo);
 
-    void cancelSale(long skuId);
+    void cancelSale(Long skuId);
 
     void onSale(Long skuId);
 
@@ -26,5 +27,16 @@ public interface SkuInfoService extends IService<SkuInfo> {
 
     BigDecimal get1010Price(Long skuId);
 
+    /**
+     * 找到所有的商品id
+     * @return
+     */
     List<Long> findAllSkuId();
+
+    /**
+     * 得到某个sku在es中需要存储所有数据
+     * @param skuId
+     * @return
+     */
+    Goods getGoodsBySkuId(Long skuId);
 }

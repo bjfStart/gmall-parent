@@ -35,7 +35,7 @@ public class Goods {
     @Field(type = FieldType.Long)
     private Long tmId;
 
-    @Field(type = FieldType.Keyword)
+    @Field(type = FieldType.Keyword) //这些品牌名不需要拆开，所以用keyword
     private String tmName;
 
     @Field(type = FieldType.Keyword)
@@ -67,5 +67,6 @@ public class Goods {
     // Nested 支持嵌套查询
     @Field(type = FieldType.Nested)
     private List<SearchAttr> attrs;
-
+    //es底层对集合 扁平化处理集合数据 相同字段的数据会放在一起
+    //集合内元素如果未来需要作为检索条件，集合就必须是 Nested映射 + NestedQuery = 正确结果
 }

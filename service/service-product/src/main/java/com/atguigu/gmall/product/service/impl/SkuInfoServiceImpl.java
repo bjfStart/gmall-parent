@@ -1,5 +1,10 @@
 package com.atguigu.gmall.product.service.impl;
+import com.atguigu.gmall.feign.search.SearchFeignClient;
+import com.atguigu.gmall.model.list.SearchAttr;
+import com.google.common.collect.Lists;
+import java.util.Date;
 
+import com.atguigu.gmall.model.list.Goods;
 import com.atguigu.gmall.model.product.*;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
@@ -38,6 +43,12 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
 
     @Autowired
     SpuSaleAttrService spuSaleAttrService;
+
+    @Autowired
+    BaseTrademarkService baseTrademarkService;
+
+    @Autowired
+    SearchFeignClient searchFeignClient;
 
     @Transactional
     @Override
@@ -78,15 +89,19 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
      * @param skuId
      */
     @Override
-    public void cancelSale(long skuId) {
+    public void cancelSale(Long skuId) {
         skuInfoMapper.updateSale(skuId, 0);
-        //TODO 2、从es中删除这个商品
+        //2、从es中删除这个商品
+        searchFeignClient.deleteGoods(skuId);
     }
 
     @Override
     public void onSale(Long skuId) {
         skuInfoMapper.updateSale(skuId, 1);
-        //TODO 2、给es中保存这个商品，商品就能被检索到了
+        //2、给es中保存这个商品，商品就能被检索到了
+        Goods goods = getGoodsBySkuId(skuId);
+        searchFeignClient.saveGoods(goods);
+
     }
 
     @Override
@@ -136,6 +151,41 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     @Override
     public List<Long> findAllSkuId() {
         return skuInfoMapper.getAllSkuId();
+    }
+
+    @Override
+    public Goods getGoodsBySkuId(Long skuId) {
+        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+
+        Goods goods = new Goods();
+        goods.setId(skuId);
+        goods.setDefaultImg(skuInfo.getSkuDefaultImg());
+        goods.setTitle(skuInfo.getSkuName());
+        goods.setPrice(skuInfo.getPrice().doubleValue());
+        goods.setCreateTime(new Date());
+        goods.setTmId(skuInfo.getTmId());
+
+        BaseTrademark trademark = baseTrademarkService.getById(skuInfo.getTmId());
+        goods.setTmName(trademark.getTmName());
+        goods.setTmLogoUrl(trademark.getLogoUrl());
+
+        CategoryViewTo view = baseCategory3Mapper.getCategoryView(skuInfo.getCategory3Id());
+        goods.setCategory1Id(view.getCategory1Id());
+        goods.setCategory1Name(view.getCategory1Name());
+        goods.setCategory2Id(view.getCategory2Id());
+        goods.setCategory2Name(view.getCategory2Name());
+        goods.setCategory3Id(view.getCategory3Id());
+        goods.setCategory3Name(view.getCategory3Name());
+
+        //TODO 热度分更新
+        goods.setHotScore(0L);
+
+        //查询当前sku所有平台属性和值
+        List<SearchAttr> skuAttrNameAndValue =  skuAttrValueService.getSkuAttrNameAndValue(skuId);
+        goods.setAttrs(skuAttrNameAndValue);
+
+
+        return goods;
     }
 }
 

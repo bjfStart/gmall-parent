@@ -1,0 +1,16 @@
+server:
+  port: 10000
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  elasticsearch:
+    rest:
+      uris: http://192.168.2.108:9200
+
+# dsl:
+  # ALL -- TRACE -- DEBUG -- INFO -- WARN -- ERROR --OFF
+logging:
+  level:
+    tracer: trace  #打开追踪器
+#    com.atguigu.gmall: trace
+    org.elasticsearch: trace
