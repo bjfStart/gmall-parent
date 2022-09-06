@@ -16,7 +16,8 @@ import org.springframework.context.annotation.Import;
 //@Import(RedissonAutoConfiguration.class)
 @EnableThreadPool
 @EnableFeignClients(basePackages = {
-        "com.atguigu.gmall.feign.product"
+        "com.atguigu.gmall.feign.product",
+        "com.atguigu.gmall.feign.search"
 })
 @SpringCloudApplication
 public class ItemMainApplication {

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.atguigu.gmall.activity.mapper.ActivityInfoMapper">
+<mapper namespace="com.atguigu.gmall.user.mapper.ActivityInfoMapper">
 
     <resultMap id="BaseResultMap" type="com.atguigu.gmall.model.activity.ActivityInfo">
             <id property="id" column="id" jdbcType="BIGINT"/>

@@ -4,6 +4,7 @@ import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.feign.product.SkuProductFeginClient;
+import com.atguigu.gmall.feign.search.SearchFeignClient;
 import com.atguigu.starter.cache.service.CacheOpsService;
 import com.atguigu.starter.cache.annotation.GmallCache;
 import com.atguigu.gmall.item.service.SkuDetailService;
@@ -50,6 +51,9 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     @Autowired
     StringRedisTemplate redisTemplate;
 
+    @Autowired
+    SearchFeignClient searchFeignClient;
+
     //    @Transactional
     @GmallCache(
             cacheKey = SysRedisConst.SKU_INFO_PREFIX + "#{#params[0]}",
@@ -61,6 +65,16 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     public SkuDetailTo getSkuDetail(long skuId) {
         SkuDetailTo skuDetailFromRpc = getSkuDetailFromRpc(skuId);
         return skuDetailFromRpc;
+    }
+
+    @Override
+    public void updateHotScore(long skuId) {
+        //redis统计得分
+        Long increment = redisTemplate.opsForValue().increment(SysRedisConst.SKU_HOTSCORE_PREFX + skuId);
+        if(increment % 100 == 0){
+            //累计到一定量更新es
+            searchFeignClient.updateHotScore(skuId,increment);
+        }
     }
 
     /**

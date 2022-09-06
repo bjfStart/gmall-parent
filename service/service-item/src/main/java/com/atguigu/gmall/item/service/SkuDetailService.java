@@ -10,4 +10,6 @@ import java.util.List;
  */
 public interface SkuDetailService {
     SkuDetailTo getSkuDetail(long skuId);
+
+    void updateHotScore(long skuId);
 }

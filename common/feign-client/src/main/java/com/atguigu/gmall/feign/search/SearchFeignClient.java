@@ -7,6 +7,8 @@ import com.atguigu.gmall.model.vo.search.SearchResponseVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @author feng
  * @create 2022-09-05 21:50
@@ -23,4 +25,9 @@ public interface SearchFeignClient {
 
     @PostMapping("/goods/search")
     Result<SearchResponseVo> search(@RequestBody SearchParamVo paramVo);
+
+    @GetMapping("/goods/hotscore/{skuId}")
+    Result updateHotScore(@PathVariable("skuId") Long skuId,
+                          @RequestParam("score") Long score);
+
 }
