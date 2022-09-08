@@ -73,7 +73,7 @@ public class GoodServiceImpl implements GoodsService {
     public SearchResponseVo search(SearchParamVo paramVo) {
         //1.动态构建出搜索条件
         Query query = buildQueryDsl(paramVo);
-        //2.搜索
+        //2.搜索]
         SearchHits<Goods> goods = esRestTemplate.search(query, Goods.class, IndexCoordinates.of("goods"));
         //3.将搜索结果进行转换
         SearchResponseVo responseVo = buildSearchResponseResult(goods,paramVo);

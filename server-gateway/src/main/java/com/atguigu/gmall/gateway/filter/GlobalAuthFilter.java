@@ -110,7 +110,7 @@ public class GlobalAuthFilter implements GlobalFilter {
                 //3.3 判断用户信息是否正确
                 if(info != null){
                     //Redis中由此用户。exchange里面的request的头会新增一个userid
-                    ServerWebExchange webExchange = userIdTransport(info,exchange);
+                    ServerWebExchange webExchange = userIdOrTempIdTransport(info,exchange);
                     return chain.filter(webExchange);
                 }else{
                     //redis中无次用户【假令牌、token没有，没登录】
@@ -121,18 +121,16 @@ public class GlobalAuthFilter implements GlobalFilter {
         }
 
         //能走到这儿，既不是静态资源直接放行，也不是必须的才能访问的。就一普通请求
-        //普通氢气只要带了token，说明可能登录了。只要登录了，就透传用id
+        //普通请求只要带了token，说明可能登录了。只要登录了，就透传用id
         String tokenValue = getTokenValue(exchange);
         UserInfo info = getTokenUserInfo(tokenValue);
-        if(info != null){
-            exchange = userIdTransport(info,exchange);
-        }else{
-            //如果前端带了token，还是没有用户信息，代表这是假令牌
-            if(!StringUtils.isEmpty(tokenValue)){
-                //重定向到登录，可以不带token，要带得带真确
-                return redirectToCustomPage(urlProperties.getLoginPage() + "?originUrl="+uri,exchange);
-            }
+        if(!StringUtils.isEmpty(tokenValue) && info == null){
+            //假请求直接打回登录
+            return redirectToCustomPage(urlProperties.getLoginPage()+"?originUrl="+uri,exchange);
         }
+        //普通请求，透传用户id或者时临时id
+        exchange = userIdOrTempIdTransport(info,exchange);
+
         return chain.filter(exchange);
 
 
@@ -191,30 +189,58 @@ public class GlobalAuthFilter implements GlobalFilter {
 
     /**
      * 用户id透传
+     * 看前端有没有带临时id，有的话顺便透传一下
      * @param info
      * @param exchange
      * @return
      */
-    private ServerWebExchange userIdTransport(UserInfo info, ServerWebExchange exchange) {
-        if(info != null){
-            //请求一旦发来，所有的请求数据都是固定的，不能进行任何修改，只能读取
-            ServerHttpRequest request = exchange.getRequest();
+    private ServerWebExchange userIdOrTempIdTransport(UserInfo info, ServerWebExchange exchange) {
 
-            //根据原来的请求，封装一个新请求
-            ServerHttpRequest newReq = exchange.getRequest()
-                    .mutate() //变一个新的
-                    .header(SysRedisConst.USERID_HEADER, info.getId().toString())
-                    .build();//添加自己的头
+        //请求一旦发来，所有的请求数据都是固定的，不能进行任何修改，只能读取
+        ServerHttpRequest.Builder newReqBuilder = exchange.getRequest().mutate();
+        //用户登录了
+        if(info != null) {
+            newReqBuilder.header(SysRedisConst.USERID_HEADER, info.getId().toString());
+        }
+        //用户没登录
+        //获取前端带来的临时id的值
+        String userTempId = getUserTempId(exchange);
+        newReqBuilder.header(SysRedisConst.USERTEMPID_HEADER,userTempId);
+//            //根据原来的请求，封装一个新请求
+//            ServerHttpRequest newReq = exchange.getRequest()
+//                    .mutate() //变一个新的
+//                    .header(SysRedisConst.USERID_HEADER, info.getId().toString())
+//                    .header(SysRedisConst.USERTEMPID_HEADER,userTempId)
+//                    .build();//添加自己的头
 
             //放行时传改掉的exchange
             ServerWebExchange webExchange = exchange
                     .mutate()
-                    .request(newReq)
+                    .request(newReqBuilder.build())
                     .response(exchange.getResponse())
                     .build();
             return webExchange;
+
+    }
+
+    /**
+     * 获取临时id
+     * @param exchange
+     * @return
+     */
+    private String getUserTempId(ServerWebExchange exchange) {
+        ServerHttpRequest request = exchange.getRequest();
+        //1.尝试获取类中的临时id
+        String  tempId = request.getHeaders().getFirst("userTempId");
+        //2.如果头中没有，尝试获取cookie中的值
+        if(StringUtils.isEmpty(tempId)){
+            HttpCookie httpCookie = request.getCookies().getFirst("userTempId");
+            //如果连cookie都没有时，直接获取value，会报空指针异常，需要加判断
+            if(httpCookie != null){
+                tempId = httpCookie.getValue();
+            }
         }
-        return exchange;
+        return tempId;
     }
 
     /**

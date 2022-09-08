@@ -37,6 +37,11 @@ spring:
           predicates: #断言
             - Path=/api/user/**
 
+        - id: cart_route
+          uri: lb://service-cart
+          predicates: #断言
+            - Path=/api/cart/**
+
         - id: web_all_route # 以**.gmall.com 开头的所有请求都lb(loadbalancer) 转给 service-product
           uri: lb://web-all
           predicates: #断言
