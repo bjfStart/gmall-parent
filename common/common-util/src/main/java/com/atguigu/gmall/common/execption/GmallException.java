@@ -34,6 +34,8 @@ public class GmallException extends RuntimeException {
     public GmallException(ResultCodeEnum resultCodeEnum) {
         super(resultCodeEnum.getMessage());
         this.code = resultCodeEnum.getCode();
+        this.codeEnum = resultCodeEnum;
+
     }
 
     @Override

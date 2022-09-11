@@ -1,13 +1,17 @@
 package com.atguigu.gmall.cart.service.impl;
 import java.io.DataInputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.math.BigDecimal;
 
+import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.util.Jsons;
 import com.google.common.collect.Lists;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -25,6 +29,9 @@ import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import sun.security.util.AuthResources_it;
 
 /**
  * @author feng
@@ -37,6 +44,9 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     SkuProductFeginClient skuProductFeginClient;
+
+    @Autowired
+    ThreadPoolExecutor executor;
 
     @Override
     public SkuInfo addToCart(Long skuId, Integer num) {
@@ -123,6 +133,7 @@ public class CartServiceImpl implements CartService {
         BoundHashOperations<String, String ,String> ops = redisTemplate.boundHashOps(cartKey);
         //1.拿到购物车中指定商品的json数据
         String jsonData = ops.get(skuId.toString());
+
         return Jsons.toObj(jsonData,CartInfo.class);
     }
 
@@ -134,8 +145,55 @@ public class CartServiceImpl implements CartService {
                 .map(str -> Jsons.toObj(str, CartInfo.class))
                 .sorted((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()))
                 .collect(Collectors.toList());
+        //顺便把购物车中的所有商品的价格再次查询一边进行更新 。 异步不保证立即执行
+        //不用等价格更新。 异步情况下拿不到老请求
+        //1.老请求
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        executor.submit(()->{
+            //2.绑定请求到这个线程
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            updateCartAllItemsPrice(cartKey,infos);
+            //3.移除数据
+            RequestContextHolder.resetRequestAttributes();
+        });
+
         return infos;
     }
+
+    @Override
+    public void updateCartAllItemsPrice(String cartKey, List<CartInfo> infos) {
+        BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
+        System.out.println("更新价格启动："+Thread.currentThread());
+        //1.更新每个商品的价格
+        infos.stream()
+                .forEach(cartInfo -> {
+                    //1.查出最新价格
+                    Result<BigDecimal> price = skuProductFeginClient.getRealPrice(cartInfo.getSkuId());
+                    //2.设置新价格
+                    cartInfo.setSkuPrice(price.getData());
+                    cartInfo.setUpdateTime(new Date());
+                    //3.更新购物车价格
+                    hashOps.put(cartInfo.getSkuId().toString(),Jsons.toStr(cartInfo));
+
+                });
+        System.out.println("更新价格结束："+Thread.currentThread());
+
+    }
+
+//    public static void main(String[] args) throws InterruptedException {
+//        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+//        System.out.println("main线程:"+Thread.currentThread() + "==>" + Runtime.getRuntime().availableProcessors());
+//        //流底层开启并发后使用默认 FokJoinPool
+//        list.stream()
+//                .parallel() //线程数量和信和数量一样。队列
+//                .forEach(integer -> {
+//                    System.out.println("流线程:"+Thread.currentThread());
+//                });
+//        int submissionCount = ForkJoinPool.commonPool().getQueuedSubmissionCount();
+////        ForkJoinPool.commonPool().getQueuedTaskCount() //64M
+//        Thread.sleep(100000);
+//    }
+
 
     @Override
     public void updateItemNum(Long skuId, Integer num, String cartKey) {
@@ -213,6 +271,8 @@ public class CartServiceImpl implements CartService {
             }
         }
     }
+
+
 
 
     /**

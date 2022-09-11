@@ -79,4 +79,11 @@ public interface CartService {
     List<CartInfo> getCheckedItems(String cartKey);
 
     void mergeUserAndTempCart();
+
+    /**
+     * 查询购物车所有商品的实时价格
+     * @param cartKey
+     * @param infos 购物车中的所有商品
+     */
+    void updateCartAllItemsPrice(String cartKey, List<CartInfo> infos);
 }

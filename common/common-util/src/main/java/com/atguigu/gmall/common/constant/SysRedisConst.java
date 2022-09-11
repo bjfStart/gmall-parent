@@ -25,7 +25,7 @@ public class SysRedisConst {
     public static final String USERTEMPID_HEADER = "usertempid";
     public static final String CART_KEY = "user:id:"; //用户id或临时id
     //购物车中商品总数限制
-    public static final long CART_ITEMS_LIMIT = 200;
+    public static final long CART_ITEMS_LIMIT = 2;
     //单个商品数量限制
     public static final Integer CART_ITEM_NUM_LIMIT = 200;
 }

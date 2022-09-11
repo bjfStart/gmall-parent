@@ -23,6 +23,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 //@RestControllerAdvice
 public class GlobalException {
 
+    /**
+     * 业务期间出现的所有异常都用 GmallException 包装
+     * @param exception
+     * @return
+     */
     @ExceptionHandler(GmallException.class)
     public Result handleGmallException(GmallException exception){
         //业务状态的枚举类

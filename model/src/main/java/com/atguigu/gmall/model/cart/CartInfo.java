@@ -1,5 +1,6 @@
 package com.atguigu.gmall.model.cart;
 
+import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
 import com.atguigu.gmall.model.activity.CouponInfo;
@@ -38,7 +39,7 @@ public class CartInfo extends BaseEntity {
     private Integer skuNum;
 
     public void setSkuNum(Integer skuNum) {
-        if(skuNum > 200){
+        if(skuNum > SysRedisConst.CART_ITEM_NUM_LIMIT){
             throw  new GmallException(ResultCodeEnum.CART_ITEM_SKUNUM_OVERFLOW);
         }
         this.skuNum = skuNum;

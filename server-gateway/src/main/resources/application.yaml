@@ -54,6 +54,9 @@ app:
       - /css/**
       - /js/**
       - /img/**
+      - /login.html
+      - /api/user/passport/login
+
     login-auth-url: #登录以后才能访问的资源
       - /order/**
     deny-url:

@@ -34,7 +34,7 @@ public class CartController {
 
         //1.把指定商品添加到购物车
         System.out.println("web-all 获取的用户id:");
-        Result<SkuInfo> result = cartFeignClient.addToCart(skuId, skuNum);
+        Result<Object> result = cartFeignClient.addToCart(skuId, skuNum);
         if(result.isOk()){
             model.addAttribute("skuInfo",result.getData());
             model.addAttribute("skuNum",skuNum);
