@@ -23,7 +23,7 @@ public class IndexController {
     /**
      * 跳到首页
      */
-    @GetMapping({"/","/index"})
+    @GetMapping({"/","/index","/index.html"})
     public String indexPage(Model model){
         //远程查询出所有菜单，封装成一个树形结构的模型
         Result<List<CategoryTreeTo>> result = categoryFeignClient.getAllCategoryWithTree();

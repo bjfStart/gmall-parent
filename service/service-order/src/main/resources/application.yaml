@@ -3,9 +3,14 @@ server:
 spring:
   profiles:
     include: sharding
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://192.168.2.108:3306/gmall_order?useSSL=false
     username: root
     password: 123456
     type: com.zaxxer.hikari.HikariDataSource
+
+app:
+  ware-url: http://localhost:9001/
