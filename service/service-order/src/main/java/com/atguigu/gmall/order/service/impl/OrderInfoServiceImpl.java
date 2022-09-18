@@ -2,15 +2,21 @@ package com.atguigu.gmall.order.service.impl;
 
 import com.atguigu.gmall.common.auth.AuthUtils;
 import com.atguigu.gmall.common.constant.SysRedisConst;
+import com.atguigu.gmall.common.util.Jsons;
+import com.atguigu.gmall.model.base.BaseEntity;
 import com.atguigu.gmall.model.enums.OrderStatus;
 import com.atguigu.gmall.model.enums.ProcessStatus;
 import com.atguigu.gmall.model.order.OrderDetail;
 import com.atguigu.gmall.model.order.OrderInfo;
+import com.atguigu.gmall.model.to.mq.OrderMsg;
 import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 import com.atguigu.gmall.order.service.OrderDetailService;
+import com.atguigu.gmall.constant.MqConst;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.atguigu.gmall.order.service.OrderInfoService;
 import com.atguigu.gmall.order.mapper.OrderInfoMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,8 +38,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     OrderInfoMapper orderInfoMapper;
     @Autowired
     OrderDetailService orderDetailService;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
-    @Transactional
+    @Transactional //数据库成功 + 消息成功
     @Override
     public Long saveOrder(OrderSubmitVo submitVo, String tradeNo) {
         //1.准备订单数据
@@ -47,8 +55,45 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<OrderDetail> details = prepareOrderDetail(submitVo,orderInfo);
         orderDetailService.saveBatch(details);
 
+        //发送订单创建完成消息
+        OrderMsg orderMsg = new OrderMsg(orderInfo.getId(), orderInfo.getUserId());
+        rabbitTemplate.convertAndSend(
+                MqConst.ORDER_EVENT_EXCHANGE,
+                MqConst.RK_ORDER_CREATED,
+                Jsons.toStr(orderMsg)
+        );
+
         //3.返回订单id
         return orderInfo.getId();
+    }
+
+    @Transactional
+    @Override
+    public void changeOrderStatus(Long orderId, Long userId, ProcessStatus closed, List<ProcessStatus> expected) {
+        String orderStatus = closed.getOrderStatus().name();
+        String processStatus = closed.name();
+        List<String> expects = expected.stream().map(status -> status.name()).collect(Collectors.toList());
+
+        //幂等修改订单
+        orderInfoMapper.updateOrderStatus(orderId,userId,processStatus,orderStatus,expects);
+    }
+
+    @Override
+    public OrderInfo getOrderInfoByOutTradeNoAndUserId(String outTradeNo, Long userId) {
+        LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(OrderInfo::getOutTradeNo,outTradeNo);
+        queryWrapper.eq(OrderInfo::getUserId,userId);
+        OrderInfo orderInfo = orderInfoMapper.selectOne(queryWrapper);
+        return orderInfo;
+    }
+
+    @Override
+    public OrderInfo getOrderInfoByOrderIdAndUserId(Long orderId, Long userId) {
+        LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BaseEntity::getId,orderId);
+        queryWrapper.eq(OrderInfo::getUserId,userId);
+        OrderInfo info = orderInfoMapper.selectOne(queryWrapper);
+        return info;
     }
 
     /**
@@ -105,7 +150,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //创建时间
         info.setCreateTime(new Date());
         //过期时间。订单多久没支付以后就过期。过期未支付：订单就会称为已关闭状态
-        info.setExpireTime(new Date(System.currentTimeMillis() + 1000 + SysRedisConst.ORDER_CLOSE_TTL));
+        info.setExpireTime(new Date(System.currentTimeMillis() + 1000 * SysRedisConst.ORDER_CLOSE_TTL));
         //订单的处理状态
         info.setProcessStatus(ProcessStatus.UNPAID.name());
         //订单状态。默认未支付

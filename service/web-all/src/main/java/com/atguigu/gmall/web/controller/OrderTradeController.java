@@ -37,4 +37,9 @@ public class OrderTradeController {
 
         return "order/trade";
     }
+
+    @GetMapping("/myOrder.html")
+    public String myOrderPage(){
+        return "order/myOrder";
+    }
 }

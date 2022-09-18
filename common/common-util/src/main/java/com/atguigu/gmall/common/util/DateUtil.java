@@ -2,6 +2,7 @@ package com.atguigu.gmall.common.util;
 
 import org.apache.commons.lang.time.DateUtils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,6 +13,16 @@ import java.util.Date;
 public class DateUtil {
 
     private static final String dateFormat = "yyyy-MM-dd";
+
+    public static Date parseDate(String date, String pattern) {
+        try {
+            return new SimpleDateFormat(pattern).parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     /**
      * 获取两个时间差 单位：秒
@@ -35,6 +46,11 @@ public class DateUtil {
 
     }
 
+    public static String formatDate(Date date,String patten) {
+        SimpleDateFormat sdf = new SimpleDateFormat(patten);
+        return sdf.format(date);
+
+    }
     /**
      * 截取比较断两个日期对象的field处的值 。
      * 如果第一个日期小于、等于、大于第二个，则对应返回负整数、0、正整数
