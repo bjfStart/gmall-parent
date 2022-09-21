@@ -52,6 +52,11 @@ spring:
           predicates: #断言
             - Path=/api/payment/**
 
+        - id: seckill_route
+          uri: lb://service-seckill
+          predicates: #断言
+            - Path=/api/activity/**
+
         - id: web_all_route # 以**.gmall.com 开头的所有请求都lb(loadbalancer) 转给 service-product
           uri: lb://web-all
           predicates: #断言

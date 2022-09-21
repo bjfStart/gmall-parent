@@ -4,10 +4,7 @@ import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author feng
@@ -18,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface OrderFeignClient {
     /**
      * 获取确认订单页的数据
+     *
      * @return
      */
     @GetMapping("/confirm/data")
@@ -26,4 +24,7 @@ public interface OrderFeignClient {
 
     @GetMapping("/info/{orderId}")
     Result<OrderInfo> getOrderInfo(@PathVariable("orderId") Long orderId);
+
+    @PostMapping("/seckillorder/submit")
+    Result<Long> submitSeckillOrder(@RequestBody OrderInfo info);
 }

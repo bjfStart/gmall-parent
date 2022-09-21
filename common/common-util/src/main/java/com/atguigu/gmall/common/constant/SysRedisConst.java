@@ -31,6 +31,16 @@ public class SysRedisConst {
     public static final String ORDER_TEMP_TOKEN = "order:temptoken:";
     //订单超时关闭时间
     public static final Integer ORDER_CLOSE_TTL = 60*45; //秒为单位
+
     public static final Integer ORDER_REFUND_TTL = 60*60*24*30;
-    public static final Object MQ_RETRY = "mq:message:";
+
+    public static final String MQ_RETRY = "mq:message:";
+
+    public static final String CACHE_SECKILL_GOODS_STOCK = "seckill:goods:stock:"; //加上商品id
+
+    public static final String CACHE_SECKILL_GOODS = "seckill:goods:"; //加上日期
+
+    public static final String SECKILL_CODE = "seckill:code:";
+
+    public static final String SECKILL_ORDERD = "seckill:goods:order:"; //加上秒杀码
 }
